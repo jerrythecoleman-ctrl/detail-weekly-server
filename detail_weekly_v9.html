@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Detail Weekly</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>
+// ALL onclick functions defined here — loads before any HTML
+function pick(g,b){document.querySelectorAll('#'+g+' .cb').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');}
+function multiPick(g,b){b.classList.toggle('sel');}
+function pickVision(b){document.querySelectorAll('.vision-card').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');}
+function obNext(f){
+  if(f===1&&!document.getElementById('ob-name').value.trim()){alert('Enter your name to continue.');return;}
+  var n=f+1;
+  document.querySelectorAll('.ob-step').forEach(s=>s.classList.remove('active'));
+  var el=document.getElementById('ob-step-'+n);if(el)el.classList.add('active');
+  updateDots(n);window.scrollTo(0,0);
+}
+function obBack(f){
+  var p=f-1;
+  document.querySelectorAll('.ob-step').forEach(s=>s.classList.remove('active'));
+  var el=document.getElementById('ob-step-'+p);if(el)el.classList.add('active');
+  updateDots(p);window.scrollTo(0,0);
+}
+function updateDots(active){
+  var dots=document.getElementById('step-dots');
+  if(!dots)return;
+  dots.querySelectorAll('.step-dot').forEach(function(d,i){
+    var s=i+1;
+    d.className='step-dot'+(s<active?' done':s===active?' active':'');
+  });
+}
+// These are stubs — main script overrides them when ready
+function submitOnboard(){waitFor('APP_submitOnboard');}
+function go(id){waitFor('APP_go',[id]);}
+function goP1(){waitFor('APP_goP1');}
+function setAns(id,val,btn){waitFor('APP_setAns',[id,val,btn]);}
+function submitP1(){waitFor('APP_submitP1');}
+function toggleCI(el,idx){waitFor('APP_toggleCI',[el,idx]);}
+function confirmFinish(){waitFor('APP_confirmFinish');}
+function finishWeek(){waitFor('APP_finishWeek');}
+function startNewWeek(){waitFor('APP_startNewWeek');}
+function openSD(){waitFor('APP_openSD');}
+function closeSD(){waitFor('APP_closeSD');}
+function saveSD(){waitFor('APP_saveSD');}
+function startReset(){waitFor('APP_startReset');}
+function showReset2(){waitFor('APP_showReset2');}
+function doReset(){waitFor('APP_doReset');}
+function closeConfirm(id){var el=document.getElementById(id);if(el)el.classList.remove('open');}
+function toggleChat(){waitFor('APP_toggleChat');}
+function sendSug(btn){waitFor('APP_sendSug',[btn]);}
+function sendChat(msg){waitFor('APP_sendChat',[msg]);}
+function waitFor(fn,args){
+  args=args||[];
+  if(typeof window[fn]==='function'){window[fn].apply(null,args);return;}
+  var n=0,iv=setInterval(function(){
+    n++;
+    if(typeof window[fn]==='function'){clearInterval(iv);window[fn].apply(null,args);}
+    else if(n>40){clearInterval(iv);console.error('App function not ready:',fn);}
+  },50);
+}
+</script>
+<style>
+:root{
+  --bg:#070707;--s1:#0f0e09;--s2:#151309;--s3:#1c1a0e;
+  --bd:#1e1b0f;--bd2:#2a2618;
+  --gold:#c8923a;--gold2:#e8b458;--gdim:#7a5520;
+  --red:#c0392b;--grn:#1a9e6a;
+  --tx:#f2ede4;--tx2:#8a8070;--tx3:#3d3828;
+  --D:'Bebas Neue','Arial Narrow',sans-serif;
+  --B:'Instrument Sans',-apple-system,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{-webkit-font-smoothing:antialiased;}
+body{background:var(--bg);color:var(--tx);font-family:var(--B);min-height:100vh;padding-bottom:80px;background-image:radial-gradient(ellipse at 50% 0%,rgba(200,146,58,.05) 0%,transparent 55%);}
+.screen{display:none;}.screen.active{display:block;}
+.wrap{max-width:560px;margin:0 auto;padding:0 18px;}
+.topbar{max-width:560px;margin:0 auto;padding:20px 18px 16px;display:flex;align-items:flex-end;justify-content:space-between;border-bottom:1px solid var(--bd);margin-bottom:24px;}
+.logo{font-family:var(--D);font-size:26px;letter-spacing:3px;line-height:1;color:var(--tx);}
+.logo em{color:var(--gold);font-style:normal;}
+.logo-sub{font-size:9px;color:var(--tx3);letter-spacing:2px;text-transform:uppercase;margin-top:3px;font-weight:600;}
+.tb-right{display:flex;align-items:center;gap:10px;}
+.tb-name{font-size:12px;font-weight:600;color:var(--tx2);}
+.tb-week{font-size:10px;color:var(--tx3);margin-top:2px;letter-spacing:1px;}
+.ib{width:34px;height:34px;border-radius:50%;background:var(--s1);border:1px solid var(--bd2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color .15s;}
+.ib:hover{border-color:var(--gold);}
+.ib svg{width:15px;height:15px;stroke:var(--tx3);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+/* ONBOARD */
+.ob-hero{padding:40px 18px 28px;max-width:560px;margin:0 auto;}
+.ob-wm{font-family:var(--D);font-size:50px;letter-spacing:4px;line-height:1;color:var(--tx);}
+.ob-wm em{color:var(--gold);font-style:normal;}
+.ob-rule{width:36px;height:2px;background:var(--gold);margin:12px 0;}
+.ob-tag{font-size:13px;color:var(--tx2);line-height:1.6;max-width:280px;}
+.ob-step{display:none;}.ob-step.active{display:block;}
+.step-indicator{display:flex;gap:6px;margin-bottom:22px;}
+.step-dot{width:6px;height:6px;border-radius:50%;background:var(--bd2);}
+.step-dot.active{background:var(--gold);}
+.step-dot.done{background:var(--grn);}
+.step-label{font-size:10px;letter-spacing:2px;color:var(--tx3);text-transform:uppercase;font-weight:600;margin-bottom:14px;}
+/* FORMS */
+.fb{margin-bottom:15px;}
+.fl{font-size:10px;letter-spacing:2.5px;color:var(--tx3);text-transform:uppercase;font-weight:600;margin-bottom:7px;display:block;}
+.fi{width:100%;background:var(--s1);border:1px solid var(--bd2);border-radius:6px;color:var(--tx);font-family:var(--B);font-size:15px;font-weight:500;padding:12px 14px;outline:none;transition:border-color .2s;-webkit-appearance:none;}
+.fi:focus{border-color:var(--gold);}
+.fi::placeholder{color:var(--tx3);font-weight:400;}
+.fn{font-size:11px;color:var(--tx3);margin-top:5px;line-height:1.5;}
+.cr{display:flex;gap:7px;flex-wrap:wrap;}
+.cb{flex:1;min-width:calc(50% - 4px);padding:10px 8px;background:var(--s1);border:1px solid var(--bd2);border-radius:6px;color:var(--tx2);font-family:var(--B);font-size:12px;font-weight:500;cursor:pointer;text-align:center;transition:all .15s;-webkit-appearance:none;line-height:1.3;}
+.cb:hover{border-color:var(--gold);color:var(--tx);}
+.cb.sel{background:#1c1500;border-color:var(--gold);color:var(--gold);}
+.vc{width:100%;padding:13px 15px;background:var(--s1);border:1px solid var(--bd2);border-radius:8px;color:var(--tx2);font-family:var(--B);font-size:13px;font-weight:500;cursor:pointer;text-align:left;-webkit-appearance:none;margin-bottom:8px;line-height:1.4;}
+.vc:hover{border-color:var(--gold);color:var(--tx);}
+.vc.sel{background:#1c1500;border-color:var(--gold);color:var(--gold);}
+.vc strong{display:block;font-size:14px;font-weight:700;margin-bottom:3px;}
+.vc span{font-size:11px;color:var(--tx3);}
+.vc.sel span{color:var(--gdim);}
+/* BUTTONS */
+.btn{display:inline-block;padding:13px 24px;border-radius:6px;font-family:var(--D);font-size:16px;letter-spacing:2px;cursor:pointer;border:none;transition:all .15s;text-transform:uppercase;-webkit-appearance:none;}
+.btn-g{background:var(--gold);color:#000;}
+.btn-g:hover{background:var(--gold2);}
+.btn-gh{background:transparent;color:var(--tx3);border:1px solid var(--bd2);font-size:13px;letter-spacing:1px;}
+.btn-gh:hover{color:var(--tx2);}
+.btn-row{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;}
+.btn-full{width:100%;text-align:center;display:block;}
+/* DASHBOARD */
+.wb{background:linear-gradient(135deg,var(--s2),var(--bg));border:1px solid rgba(200,146,58,.18);border-radius:10px;padding:18px 20px;margin-bottom:18px;}
+.wb-g{font-family:var(--D);font-size:21px;letter-spacing:2px;color:var(--gold);line-height:1;margin-bottom:5px;}
+.wb-q{font-size:12px;color:var(--tx2);line-height:1.55;font-style:italic;margin-bottom:4px;}
+.wb-a{font-size:10px;color:var(--tx3);letter-spacing:1px;}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+.sc{background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:13px 10px;text-align:center;}
+.sv{font-family:var(--D);font-size:28px;letter-spacing:1px;color:var(--gold);line-height:1;}
+.sl{font-size:9px;color:var(--tx3);letter-spacing:2px;text-transform:uppercase;margin-top:4px;font-weight:600;}
+.cc{background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:16px;margin-bottom:16px;}
+.ch{font-size:9px;letter-spacing:2.5px;color:var(--tx3);text-transform:uppercase;font-weight:600;margin-bottom:13px;}
+.cbars{display:flex;align-items:flex-end;gap:8px;height:64px;}
+.ccol{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;height:100%;justify-content:flex-end;}
+.cbar{width:100%;border-radius:3px 3px 0 0;background:var(--s3);min-height:4px;}
+.cbar.cur{background:linear-gradient(180deg,var(--gold2),var(--gold));}
+.clbl{font-size:9px;color:var(--tx3);}
+.camt{font-size:9px;color:var(--tx2);font-weight:600;}
+/* SEC HEAD */
+.sh{display:flex;align-items:center;gap:12px;margin:18px 0 10px;}
+.sh h2{font-family:var(--D);font-size:13px;letter-spacing:3px;color:var(--gold);white-space:nowrap;}
+.sh::after{content:'';flex:1;height:1px;background:var(--bd);}
+/* TABS */
+.tabs{display:flex;margin-bottom:18px;border-bottom:1px solid var(--bd);}
+.tab{flex:1;text-align:center;padding:10px 0;font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:600;color:var(--tx3);border-bottom:2px solid transparent;margin-bottom:-1px;}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+.tab.done{color:var(--grn);border-bottom-color:var(--grn);}
+/* WEEK BANNER */
+.wkb{background:linear-gradient(135deg,var(--s2),var(--bg));border:1px solid rgba(200,146,58,.15);border-radius:10px;padding:16px 18px;display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+.wkt{font-family:var(--D);font-size:21px;letter-spacing:2px;color:var(--gold);line-height:1;}
+.wks{font-size:11px;color:var(--tx3);margin-top:3px;}
+.sp{background:var(--s2);border:1px solid rgba(200,146,58,.2);border-radius:8px;padding:9px 13px;text-align:center;}
+.sn{font-family:var(--D);font-size:24px;color:var(--gold);line-height:1;}
+.sl2{font-size:8px;color:var(--tx3);letter-spacing:1.5px;text-transform:uppercase;margin-top:2px;font-weight:600;}
+/* REVIEW */
+.rvc{background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:13px;margin-bottom:7px;}
+.rvc.trap{border-left:3px solid var(--red);}
+.rvq{font-size:13px;font-weight:600;color:var(--tx);margin-bottom:3px;line-height:1.4;}
+.rvs{font-size:11px;color:var(--tx3);margin-bottom:10px;line-height:1.5;}
+.rvo{display:flex;gap:5px;}
+.rb{flex:1;padding:8px 3px;background:var(--s2);border:1px solid var(--bd2);border-radius:5px;color:var(--tx3);font-family:var(--B);font-size:11px;font-weight:600;cursor:pointer;text-align:center;-webkit-appearance:none;}
+.rb:hover{border-color:var(--gold);color:var(--tx);}
+.rb.sc2{background:#071f12;border-color:var(--grn);color:#2dcf8a;}
+.rb.sp2{background:#1f1500;border-color:var(--gold);color:var(--gold);}
+.rb.sm{background:#1f0500;border-color:var(--red);color:#e05050;}
+/* REV INPUT */
+.ric{background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:13px;margin-bottom:7px;}
+.ril{font-size:13px;font-weight:600;color:var(--tx);margin-bottom:3px;}
+.ris{font-size:11px;color:var(--tx3);margin-bottom:10px;}
+.rir{display:flex;align-items:center;gap:8px;}
+.rid{font-family:var(--D);font-size:24px;color:var(--gold);}
+.rif{flex:1;background:var(--s2);border:1px solid var(--bd2);border-radius:5px;color:var(--tx);font-family:var(--D);font-size:26px;padding:8px 12px;outline:none;-webkit-appearance:none;}
+.rif:focus{border-color:var(--gold);}
+.rif::placeholder{color:var(--tx3);}
+/* FOCUS OVERRIDE */
+.fo{background:linear-gradient(135deg,var(--s2),var(--bg));border:1px solid rgba(200,146,58,.25);border-radius:8px;padding:14px;margin-bottom:7px;}
+.fol{font-size:10px;letter-spacing:2px;color:var(--gold);text-transform:uppercase;font-weight:600;margin-bottom:5px;}
+.fod{font-size:11px;color:var(--tx3);margin-bottom:9px;line-height:1.5;}
+.foi{width:100%;background:var(--s1);border:1px solid var(--bd2);border-radius:5px;color:var(--tx);font-family:var(--B);font-size:13px;font-weight:500;padding:10px 12px;outline:none;-webkit-appearance:none;}
+.foi:focus{border-color:var(--gold);}
+.foi::placeholder{color:var(--tx3);}
+/* CHECKLIST */
+.ci{display:flex;align-items:flex-start;gap:10px;padding:13px;border-radius:8px;margin-bottom:6px;cursor:pointer;border:1px solid var(--bd);background:var(--s1);user-select:none;}
+.ci:hover{border-color:var(--bd2);}
+.ci.done{background:#120f00;border-color:rgba(200,146,58,.18);}
+.ci.done .cit{color:var(--tx3);}
+.ci.done .cis{opacity:.4;}
+.ci.pri{border-left:3px solid var(--red);}
+.ci.pri.done{border-left-color:var(--gold);}
+.ci.ov{border-left:3px solid var(--gold2);background:linear-gradient(135deg,#1a1400,var(--s1));}
+.cibx{width:21px;height:21px;border:1.5px solid var(--bd2);border-radius:4px;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;background:var(--bg);}
+.ci.done .cibx{background:var(--gold);border-color:var(--gold);}
+.cick{display:none;font-size:12px;color:#000;font-weight:800;}
+.ci.done .cick{display:block;}
+.ci-icon{width:26px;height:26px;border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;}
+.ci-icon.ng{background:rgba(232,180,88,.13);border:1px solid rgba(232,180,88,.3);}
+.ci-icon.hg{background:rgba(26,158,106,.12);border:1px solid rgba(26,158,106,.25);}
+.ci-icon.ag{background:rgba(232,180,88,.18);border:1px solid rgba(232,180,88,.4);box-shadow:0 0 8px rgba(232,180,88,.15);}
+.ci-icon.og{background:rgba(200,146,58,.15);border:1px solid rgba(200,146,58,.3);}
+.cib{flex:1;}
+.cit{font-size:13px;font-weight:600;color:var(--tx);display:block;margin-bottom:2px;line-height:1.4;}
+.cis{font-size:11px;color:var(--tx2);line-height:1.4;}
+.badge{font-size:9px;border-radius:3px;padding:2px 6px;font-weight:700;letter-spacing:1px;flex-shrink:0;margin-top:2px;}
+.badge-r{background:rgba(192,57,43,.15);color:var(--red);border:1px solid rgba(192,57,43,.3);}
+.badge-g{background:rgba(200,146,58,.15);color:var(--gold);border:1px solid rgba(200,146,58,.3);}
+.ci.done .badge-r{background:rgba(200,146,58,.15);color:var(--gold);border-color:rgba(200,146,58,.3);}
+.icon-legend{display:flex;gap:12px;flex-wrap:wrap;padding:10px 13px;background:var(--s1);border:1px solid var(--bd);border-radius:8px;margin-bottom:13px;}
+.il-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--tx3);}
+/* PROGRESS */
+.prog{margin:14px 0;}
+.pm{display:flex;justify-content:space-between;font-size:11px;color:var(--tx3);margin-bottom:6px;font-weight:500;}
+.pm span:last-child{color:var(--gold);font-weight:600;}
+.pt{background:var(--s2);border-radius:4px;height:4px;overflow:hidden;}
+.pf{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:4px;transition:width .35s ease;}
+/* VERDICT */
+.verd{border-radius:10px;padding:16px;margin-bottom:14px;border:1px solid var(--bd);}
+.verd.vg{background:#04150d;border-color:rgba(26,158,106,.3);}
+.verd.vy{background:#130e00;border-color:rgba(200,146,58,.3);}
+.verd.vr{background:#150300;border-color:rgba(192,57,43,.3);}
+.vey{font-size:9px;letter-spacing:3px;text-transform:uppercase;font-weight:600;margin-bottom:4px;}
+.verd.vg .vey{color:var(--grn);}
+.verd.vy .vey{color:var(--gold);}
+.verd.vr .vey{color:var(--red);}
+.vti{font-family:var(--D);font-size:28px;letter-spacing:2px;line-height:1;margin-bottom:8px;}
+.verd.vg .vti{color:#2dcf8a;}
+.verd.vy .vti{color:var(--gold);}
+.verd.vr .vti{color:#e05050;}
+.vbo{font-size:13px;color:var(--tx2);line-height:1.6;}
+/* TRAP ALERT */
+.ta{background:#150300;border:1px solid rgba(192,57,43,.3);border-radius:8px;padding:12px 14px;margin-bottom:14px;display:none;}
+.ta.show{display:block;}
+.ta-t{font-size:9px;letter-spacing:2px;color:var(--red);text-transform:uppercase;font-weight:700;margin-bottom:7px;}
+.ta ul{padding-left:14px;}
+.ta li{font-size:12px;color:#c07070;margin-bottom:3px;}
+/* REV SUMMARY */
+.rs{background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:13px 15px;margin-bottom:13px;}
+.rsl{font-size:9px;letter-spacing:2px;color:var(--tx3);text-transform:uppercase;font-weight:600;margin-bottom:5px;}
+.rsr{display:flex;align-items:baseline;gap:10px;}
+.rsv{font-family:var(--D);font-size:32px;letter-spacing:1px;line-height:1;}
+.rsg{font-size:12px;color:var(--tx3);}
+/* AI BOX */
+.aib{background:var(--s1);border:1px solid rgba(200,146,58,.2);border-radius:8px;padding:14px;margin-bottom:13px;}
+.ail{font-size:9px;letter-spacing:2px;color:var(--gold);text-transform:uppercase;font-weight:600;margin-bottom:8px;}
+.ail::before{content:'◆';margin-right:6px;font-size:8px;}
+.aibody{font-size:13px;color:var(--tx2);line-height:1.65;}
+/* NEW WEEK */
+.nwc{background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:13px;margin-bottom:9px;}
+.nwct{font-family:var(--D);font-size:12px;letter-spacing:2px;color:var(--gold);margin-bottom:8px;}
+.nwi{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--bd);}
+.nwi:last-child{border-bottom:none;}
+.nwd{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.nwd.ok{background:var(--grn);}
+.nwd.no{background:var(--red);}
+.nwt{font-size:12px;color:var(--tx2);}
+.nwt.ok{color:var(--tx3);text-decoration:line-through;}
+/* RAPID REVIEW */
+.rrc{background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:13px;margin-bottom:8px;}
+.rrq{font-size:13px;font-weight:600;color:var(--tx);margin-bottom:10px;line-height:1.4;}
+.rrta{width:100%;background:var(--s2);border:1px solid var(--bd2);border-radius:5px;color:var(--tx);font-family:var(--B);font-size:13px;padding:10px 12px;outline:none;resize:none;-webkit-appearance:none;}
+.rrta:focus{border-color:var(--gold);}
+/* HISTORY */
+.hw{background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:14px;margin-bottom:8px;}
+.hwhd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+.hwn{font-family:var(--D);font-size:18px;letter-spacing:2px;color:var(--gold);}
+.hwd{font-size:10px;color:var(--tx3);text-align:right;}
+.hwst{display:flex;gap:8px;flex-wrap:wrap;}
+.hws{background:var(--s2);border:1px solid var(--bd);border-radius:5px;padding:6px 10px;text-align:center;flex:1;min-width:60px;}
+.hwsv{font-family:var(--D);font-size:16px;color:var(--gold);line-height:1;}
+.hwsl{font-size:8px;color:var(--tx3);letter-spacing:1px;text-transform:uppercase;margin-top:2px;}
+/* SETTINGS DRAWER */
+.sdo{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:400;display:none;}
+.sdo.open{display:block;}
+.sdp{position:fixed;top:0;right:0;bottom:0;width:min(320px,90vw);background:var(--s1);border-left:1px solid var(--bd2);z-index:401;overflow-y:auto;padding:22px 16px 60px;transform:translateX(100%);transition:transform .22s ease;}
+.sdp.open{transform:translateX(0);}
+.sdt{font-family:var(--D);font-size:20px;letter-spacing:3px;color:var(--gold);margin-bottom:20px;}
+.sdc{position:absolute;top:18px;right:14px;width:30px;height:30px;border-radius:50%;background:var(--s2);border:1px solid var(--bd2);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.sdc svg{width:13px;height:13px;stroke:var(--tx3);fill:none;stroke-width:2;stroke-linecap:round;}
+.divider{height:1px;background:var(--bd);margin:14px 0;}
+/* CONFIRM */
+.cov{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:600;display:none;align-items:flex-end;justify-content:center;padding:0 16px 20px;}
+.cov.open{display:flex;}
+.cbox{background:var(--s1);border:1px solid var(--bd2);border-radius:12px;padding:22px 20px;width:100%;max-width:500px;}
+.ctitle{font-family:var(--D);font-size:20px;letter-spacing:2px;color:var(--tx);margin-bottom:8px;}
+.cbody{font-size:13px;color:var(--tx2);line-height:1.6;margin-bottom:18px;}
+.cinput{width:100%;background:var(--s2);border:1px solid var(--bd2);border-radius:5px;color:var(--tx);font-family:var(--B);font-size:14px;padding:10px 12px;outline:none;margin-bottom:14px;-webkit-appearance:none;}
+.cbtns{display:flex;gap:10px;}
+/* CHAT */
+.cfab{position:fixed;bottom:24px;right:20px;z-index:300;width:52px;height:52px;border-radius:50%;background:var(--gold);border:none;cursor:pointer;display:none;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(200,146,58,.4);animation:cpulse 3s ease-in-out infinite;}
+.cfab.show{display:flex;}
+.cfab:hover{background:var(--gold2);}
+.cfab svg{width:22px;height:22px;stroke:#000;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+@keyframes cpulse{0%,100%{box-shadow:0 4px 20px rgba(200,146,58,.4);}50%{box-shadow:0 4px 30px rgba(200,146,58,.6);}}
+.cunread{position:absolute;top:-2px;right:-2px;width:16px;height:16px;border-radius:50%;background:var(--red);border:2px solid var(--bg);font-size:9px;color:#fff;font-weight:700;display:none;align-items:center;justify-content:center;}
+.cunread.show{display:flex;}
+.cpanel{position:fixed;bottom:0;left:0;right:0;z-index:301;height:78vh;max-height:680px;background:var(--s1);border-top:1px solid var(--bd2);border-radius:16px 16px 0 0;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);box-shadow:0 -8px 40px rgba(0,0,0,.5);}
+.cpanel.open{transform:translateY(0);}
+.cphd{padding:14px 16px 12px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.cpav{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold2));display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.cptitle{font-family:var(--D);font-size:16px;letter-spacing:2px;color:var(--tx);}
+.cpsubt{font-size:10px;color:var(--tx3);margin-top:1px;}
+.cpclose{width:30px;height:30px;border-radius:50%;background:var(--s2);border:1px solid var(--bd2);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.cpclose svg{width:13px;height:13px;stroke:var(--tx3);fill:none;stroke-width:2;stroke-linecap:round;}
+.cpmsg{flex:1;overflow-y:auto;padding:14px 14px 8px;display:flex;flex-direction:column;gap:10px;}
+.cm{display:flex;flex-direction:column;max-width:88%;}
+.cm.user{align-self:flex-end;align-items:flex-end;}
+.cm.ai{align-self:flex-start;align-items:flex-start;}
+.cmb{padding:10px 13px;border-radius:10px;font-size:13px;line-height:1.55;}
+.cm.user .cmb{background:var(--gold);color:#000;border-radius:10px 10px 3px 10px;font-weight:500;}
+.cm.ai .cmb{background:var(--s2);color:var(--tx);border:1px solid var(--bd);border-radius:10px 10px 10px 3px;}
+.cmt{font-size:9px;color:var(--tx3);margin-top:3px;padding:0 2px;}
+.cpty{display:flex;align-items:center;gap:4px;padding:12px 14px;}
+.cpty span{width:6px;height:6px;border-radius:50%;background:var(--tx3);animation:tdot .9s ease-in-out infinite;}
+.cpty span:nth-child(2){animation-delay:.15s;}
+.cpty span:nth-child(3){animation-delay:.3s;}
+@keyframes tdot{0%,60%,100%{transform:translateY(0);opacity:.5;}30%{transform:translateY(-4px);opacity:1;}}
+.cpsugs{display:flex;gap:6px;flex-wrap:wrap;padding:0 14px 10px;flex-shrink:0;}
+.csug{padding:6px 11px;background:var(--s2);border:1px solid var(--bd2);border-radius:20px;font-size:11px;color:var(--tx2);cursor:pointer;white-space:nowrap;font-family:var(--B);-webkit-appearance:none;}
+.csug:hover{border-color:var(--gold);color:var(--gold);}
+.cpinput{padding:10px 12px 16px;border-top:1px solid var(--bd);display:flex;gap:8px;align-items:flex-end;flex-shrink:0;}
+.chatinput{flex:1;background:var(--s2);border:1px solid var(--bd2);border-radius:20px;color:var(--tx);font-family:var(--B);font-size:13px;padding:10px 14px;outline:none;resize:none;max-height:100px;overflow-y:auto;line-height:1.4;-webkit-appearance:none;}
+.chatinput:focus{border-color:var(--gold);}
+.chatinput::placeholder{color:var(--tx3);}
+.csend{width:38px;height:38px;border-radius:50%;background:var(--gold);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.csend:hover{background:var(--gold2);}
+.csend:disabled{background:var(--bd2);cursor:not-allowed;}
+.csend svg{width:16px;height:16px;stroke:#000;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
+</style>
+</head>
+<body>
+
+<!-- ONBOARDING -->
+<div id="s-ob" class="screen active">
+  <div class="ob-hero">
+    <div class="ob-wm">DETAIL<em>WEEKLY</em></div>
+    <div class="ob-rule"></div>
+    <div class="ob-tag">The weekly accountability system for mobile detailers serious about growing.</div>
+  </div>
+  <div class="wrap">
+    <div class="step-indicator" id="step-dots">
+      <div class="step-dot active"></div><div class="step-dot"></div><div class="step-dot"></div>
+    </div>
+    <div class="ob-step active" id="ob-step-1">
+      <div class="step-label">Step 1 of 3 — The Basics</div>
+      <div class="fb"><label class="fl">Your First Name</label><input class="fi" id="ob-name" type="text" placeholder="e.g. Jerry" maxlength="30"></div>
+      <div class="fb"><label class="fl">Business Name</label><input class="fi" id="ob-biz" type="text" placeholder="e.g. Posh Auto Detailing" maxlength="50"></div>
+      <div class="fb"><label class="fl">How long detailing?</label><div class="cr" id="ob-exp">
+        <button class="cb" data-val="new" onclick="pick('ob-exp',this)">Just Started</button>
+        <button class="cb" data-val="u1" onclick="pick('ob-exp',this)">Under 1 Year</button>
+        <button class="cb" data-val="1to3" onclick="pick('ob-exp',this)">1–3 Years</button>
+        <button class="cb" data-val="3p" onclick="pick('ob-exp',this)">3+ Years</button>
+      </div></div>
+      <div class="fb"><label class="fl">Full-time or Part-time?</label><div class="cr" id="ob-time">
+        <button class="cb" data-val="full" onclick="pick('ob-time',this)">Full-Time</button>
+        <button class="cb" data-val="part" onclick="pick('ob-time',this)">Part-Time</button>
+      </div></div>
+      <div class="fb"><label class="fl">Week Starts On</label><div class="cr" id="ob-wks">
+        <button class="cb" data-val="0" onclick="pick('ob-wks',this)">Sunday</button>
+        <button class="cb" data-val="1" onclick="pick('ob-wks',this)">Monday</button>
+      </div></div>
+      <div class="fb"><label class="fl">Weekly Revenue Goal ($)</label><input class="fi" id="ob-goal" type="number" placeholder="e.g. 2500" min="100" max="99999"><div class="fn">$10k/month = ~$2,500/week. Set your target, not where you are today.</div></div>
+      <div class="btn-row"><button class="btn btn-g btn-full" onclick="obNext(1)">Next →</button></div>
+    </div>
+    <div class="ob-step" id="ob-step-2">
+      <div class="step-label">Step 2 of 3 — Your Services</div>
+      <div class="fb"><label class="fl">Services you're pursuing (select all)</label><div class="cr" id="ob-svc">
+        <button class="cb" data-val="auto" onclick="multiPick('ob-svc',this)">Auto Detailing</button>
+        <button class="cb" data-val="marine" onclick="multiPick('ob-svc',this)">Boat / Marine</button>
+        <button class="cb" data-val="fleet" onclick="multiPick('ob-svc',this)">Fleet</button>
+        <button class="cb" data-val="rv" onclick="multiPick('ob-svc',this)">RV / Motorhome</button>
+        <button class="cb" data-val="ceramic" onclick="multiPick('ob-svc',this)">Ceramic Coating</button>
+        <button class="cb" data-val="ppf" onclick="multiPick('ob-svc',this)">Paint Protection</button>
+      </div></div>
+      <div class="fb"><label class="fl">Current Jobs Per Week</label><div class="cr" id="ob-jobs">
+        <button class="cb" data-val="1to3" onclick="pick('ob-jobs',this)">1–3 Jobs</button>
+        <button class="cb" data-val="4to6" onclick="pick('ob-jobs',this)">4–6 Jobs</button>
+        <button class="cb" data-val="7to10" onclick="pick('ob-jobs',this)">7–10 Jobs</button>
+        <button class="cb" data-val="10p" onclick="pick('ob-jobs',this)">10+ Jobs</button>
+      </div></div>
+      <div class="fb"><label class="fl">Average Job Ticket</label><div class="cr" id="ob-ticket">
+        <button class="cb" data-val="u100" onclick="pick('ob-ticket',this)">Under $100</button>
+        <button class="cb" data-val="100to200" onclick="pick('ob-ticket',this)">$100–200</button>
+        <button class="cb" data-val="200to350" onclick="pick('ob-ticket',this)">$200–350</button>
+        <button class="cb" data-val="350p" onclick="pick('ob-ticket',this)">$350+</button>
+      </div></div>
+      <div class="fb"><label class="fl">Biggest Struggle Right Now</label><div class="cr" id="ob-struggle">
+        <button class="cb" data-val="bookings" onclick="pick('ob-struggle',this)">Getting Bookings</button>
+        <button class="cb" data-val="pricing" onclick="pick('ob-struggle',this)">Pricing My Work</button>
+        <button class="cb" data-val="marketing" onclick="pick('ob-struggle',this)">Marketing</button>
+        <button class="cb" data-val="repeat" onclick="pick('ob-struggle',this)">Repeat Clients</button>
+        <button class="cb" data-val="organized" onclick="pick('ob-struggle',this)">Staying Organized</button>
+      </div></div>
+      <div class="btn-row">
+        <button class="btn btn-g" onclick="obNext(2)">Next →</button>
+        <button class="btn btn-gh" onclick="obBack(2)">← Back</button>
+      </div>
+    </div>
+    <div class="ob-step" id="ob-step-3">
+      <div class="step-label">Step 3 of 3 — Your Vision</div>
+      <div class="fb"><label class="fl">What are you building? Be honest.</label>
+        <button class="vc" data-val="hobby" onclick="pickVision(this)"><strong>A Hobby / Side Income</strong><span>I enjoy detailing and want extra money. Not building a company.</span></button>
+        <button class="vc" data-val="parttime" onclick="pickVision(this)"><strong>A Part-Time Gig</strong><span>Consistent side income but not going full-time. Balance over scale.</span></button>
+        <button class="vc" data-val="personal" onclick="pickVision(this)"><strong>A Personal Brand Business</strong><span>I'm the face of this. Clients come because of me. Known for premium work.</span></button>
+        <button class="vc" data-val="scalable" onclick="pickVision(this)"><strong>A Business Built to Scale</strong><span>Hire, systematize, eventually run without me. Built to grow or sell.</span></button>
+      </div>
+      <div class="fb"><label class="fl">Hobby or serious business?</label><div class="cr" id="ob-serious">
+        <button class="cb" data-val="hobby" onclick="pick('ob-serious',this)">It's a hobby I enjoy</button>
+        <button class="cb" data-val="side" onclick="pick('ob-serious',this)">Serious side income</button>
+        <button class="cb" data-val="biz" onclick="pick('ob-serious',this)">Building a real business</button>
+      </div></div>
+      <div class="fb"><label class="fl">Are you the face, or building beyond yourself?</label><div class="cr" id="ob-face">
+        <button class="cb" data-val="face" onclick="pick('ob-face',this)">I am the brand</button>
+        <button class="cb" data-val="system" onclick="pick('ob-face',this)">Build beyond me</button>
+        <button class="cb" data-val="unsure" onclick="pick('ob-face',this)">Not sure yet</button>
+      </div></div>
+      <div class="btn-row">
+        <button class="btn btn-g btn-full" onclick="submitOnboard()">Start Building →</button>
+        <button class="btn btn-gh btn-full" onclick="obBack(3)">← Back</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="s-dash" class="screen">
+  <div class="topbar"><div><div class="logo">DETAIL<em>WEEKLY</em></div><div class="logo-sub" id="d-biz"></div></div>
+  <div class="tb-right">
+    <div style="text-align:right;"><div class="tb-name" id="d-name"></div><div class="tb-week" id="d-week"></div></div>
+    <div class="ib" onclick="go('s-hist')" title="History"><svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg></div>
+    <div class="ib" onclick="openSD()" title="Settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l-.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
+  </div></div>
+  <div class="wrap">
+    <div class="wb"><div class="wb-g" id="d-greet"></div><div class="wb-q" id="d-quote"></div><div class="wb-a" id="d-author"></div></div>
+    <div class="stats-row">
+      <div class="sc"><div class="sv" id="st-streak">0</div><div class="sl">Streak</div></div>
+      <div class="sc"><div class="sv" id="st-best">$0</div><div class="sl">Best Week</div></div>
+      <div class="sc"><div class="sv" id="st-weeks">0</div><div class="sl">Weeks In</div></div>
+    </div>
+    <div class="cc"><div class="ch">Revenue — Last 4 Weeks</div><div class="cbars" id="chart-bars"></div></div>
+    <div class="btn-row"><button class="btn btn-g" onclick="goP1()">Start Weekly Check-In →</button></div>
+  </div>
+</div>
+
+<!-- NEW WEEK -->
+<div id="s-nw" class="screen">
+  <div class="topbar"><div><div class="logo">DETAIL<em>WEEKLY</em></div><div class="logo-sub" id="nw-biz"></div></div><div class="tb-right"><div style="text-align:right;"><div class="tb-name" id="nw-name"></div><div class="tb-week">New Week</div></div></div></div>
+  <div class="wrap">
+    <div id="nw-verd"></div>
+    <div id="nw-sum"></div>
+    <div class="sh"><h2>Quick Review</h2></div>
+    <div class="rrc"><div class="rrq">How did last week feel overall?</div><div class="cr" id="nw-feel">
+      <button class="cb" data-val="crushed" onclick="pick('nw-feel',this)">Crushed It</button>
+      <button class="cb" data-val="solid" onclick="pick('nw-feel',this)">Solid</button>
+      <button class="cb" data-val="rough" onclick="pick('nw-feel',this)">Rough</button>
+      <button class="cb" data-val="rails" onclick="pick('nw-feel',this)">Off The Rails</button>
+    </div></div>
+    <div class="rrc"><div class="rrq">What was your biggest win?</div><textarea class="rrta" id="nw-win" rows="2" placeholder="e.g. Booked 3 new clients..."></textarea></div>
+    <div class="rrc"><div class="rrq">What held you back?</div><textarea class="rrta" id="nw-obs" rows="2" placeholder="e.g. Weather, slow bookings..."></textarea></div>
+    <div class="rrc"><div class="rrq">Did revenue hit goal?</div><div class="cr" id="nw-rev">
+      <button class="cb" data-val="yes" onclick="pick('nw-rev',this)">Hit It</button>
+      <button class="cb" data-val="close" onclick="pick('nw-rev',this)">Almost</button>
+      <button class="cb" data-val="no" onclick="pick('nw-rev',this)">Missed It</button>
+    </div></div>
+    <div class="btn-row"><button class="btn btn-g btn-full" onclick="startNewWeek()">Build My New Week →</button></div>
+  </div>
+</div>
+
+<!-- PHASE 1 -->
+<div id="s-p1" class="screen">
+  <div class="topbar"><div><div class="logo">DETAIL<em>WEEKLY</em></div><div class="logo-sub" id="p1-biz"></div></div><div class="tb-right"><div style="text-align:right;"><div class="tb-name" id="p1-name"></div><div class="tb-week">Last Week Review</div></div><div class="ib" onclick="openSD()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l-.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div></div></div>
+  <div class="wrap">
+    <div class="tabs"><div class="tab active">① Review Last Week</div><div class="tab">② This Week's Plan</div></div>
+    <div class="wkb"><div><div class="wkt">LAST WEEK</div><div class="wks">Be honest. This builds your plan.</div></div><div class="sp"><div class="sn" id="p1-streak">0</div><div class="sl2">Wk Streak</div></div></div>
+    <div id="p1-body"></div>
+    <div class="btn-row">
+      <button class="btn btn-g" onclick="submitP1()">Generate This Week's Plan →</button>
+      <button class="btn btn-gh" onclick="go('s-dash')">← Back</button>
+    </div>
+  </div>
+</div>
+
+<!-- PHASE 2 -->
+<div id="s-p2" class="screen">
+  <div class="topbar"><div><div class="logo">DETAIL<em>WEEKLY</em></div><div class="logo-sub" id="p2-biz"></div></div><div class="tb-right"><div style="text-align:right;"><div class="tb-name" id="p2-name"></div><div class="tb-week" id="p2-wklbl">This Week</div></div><div class="ib" onclick="openSD()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l-.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div></div></div>
+  <div class="wrap">
+    <div class="tabs"><div class="tab done">① Review Last Week</div><div class="tab active">② This Week's Plan</div></div>
+    <div id="p2-ai"></div>
+    <div id="p2-verd"></div>
+    <div class="ta" id="ta"><div class="ta-t">⚠ Repeat Traps — Second Week Running</div><ul id="ta-list"></ul></div>
+    <div id="p2-body"></div>
+    <div class="prog"><div class="pm"><span>Weekly Progress</span><span id="prog-lbl">0 / 0</span></div><div class="pt"><div class="pf" id="prog-fill" style="width:0%"></div></div></div>
+    <div class="btn-row">
+      <button class="btn btn-g" onclick="confirmFinish()">Save & Complete Week →</button>
+      <button class="btn btn-gh" onclick="go('s-p1')">← Redo Review</button>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORY -->
+<div id="s-hist" class="screen">
+  <div class="topbar"><div><div class="logo">DETAIL<em>WEEKLY</em></div><div class="logo-sub">History</div></div><div class="tb-right"><div class="ib" onclick="go('s-dash')"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></div></div></div>
+  <div class="wrap"><div class="sh"><h2>All Weeks</h2></div><div id="hist-body"></div></div>
+</div>
+
+<!-- SETTINGS DRAWER -->
+<div class="sdo" id="sdo" onclick="closeSD()"></div>
+<div class="sdp" id="sdp">
+  <div class="sdt">SETTINGS</div>
+  <div class="sdc" onclick="closeSD()"><svg viewBox="0 0 14 14"><line x1="13" y1="1" x2="1" y2="13"/><line x1="1" y1="1" x2="13" y2="13"/></svg></div>
+  <div class="fb"><label class="fl">Your Name</label><input class="fi" id="s-name" type="text" maxlength="30"></div>
+  <div class="fb"><label class="fl">Business Name</label><input class="fi" id="s-biz" type="text" maxlength="50"></div>
+  <div class="fb"><label class="fl">Weekly Revenue Goal ($)</label><input class="fi" id="s-goal" type="number" min="100" max="99999"></div>
+  <div class="fb"><label class="fl">Biggest Struggle</label><div class="cr" id="s-struggle">
+    <button class="cb" data-val="bookings" onclick="pick('s-struggle',this)">Bookings</button>
+    <button class="cb" data-val="pricing" onclick="pick('s-struggle',this)">Pricing</button>
+    <button class="cb" data-val="marketing" onclick="pick('s-struggle',this)">Marketing</button>
+    <button class="cb" data-val="repeat" onclick="pick('s-struggle',this)">Repeat Clients</button>
+    <button class="cb" data-val="organized" onclick="pick('s-struggle',this)">Organized</button>
+  </div></div>
+  <div class="fb"><label class="fl">Week Starts On</label><div class="cr" id="s-wks">
+    <button class="cb" data-val="0" onclick="pick('s-wks',this)">Sunday</button>
+    <button class="cb" data-val="1" onclick="pick('s-wks',this)">Monday</button>
+  </div></div>
+  <div class="btn-row"><button class="btn btn-g btn-full" onclick="saveSD()">Save Changes</button></div>
+  <div class="divider"></div>
+  <button class="btn btn-gh btn-full" style="color:var(--red);border-color:rgba(192,57,43,.3);margin-top:4px;" onclick="startReset()">Reset All Data</button>
+</div>
+
+<!-- CONFIRM: FINISH WEEK -->
+<div class="cov" id="cf-fin">
+  <div class="cbox">
+    <div class="ctitle">COMPLETE THIS WEEK?</div>
+    <div class="cbody">This closes Week <span id="cf-wknum"></span> permanently. Your progress is saved and you start fresh next week. This cannot be undone.</div>
+    <div class="cbtns">
+      <button class="btn btn-g" style="flex:1;" onclick="finishWeek()">Yes, Complete It</button>
+      <button class="btn btn-gh" style="flex:1;" onclick="closeConfirm('cf-fin')">← Go Back</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM: RESET STEP 1 -->
+<div class="cov" id="cf-r1">
+  <div class="cbox">
+    <div class="ctitle">RESET ALL DATA?</div>
+    <div class="cbody">This permanently deletes every week, stat, streak, and record. Everything gone.</div>
+    <div class="cbtns">
+      <button class="btn" style="flex:1;background:var(--red);color:#fff;" onclick="showReset2()">Yes, I'm Sure</button>
+      <button class="btn btn-gh" style="flex:1;" onclick="closeConfirm('cf-r1')">← Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM: RESET STEP 2 -->
+<div class="cov" id="cf-r2">
+  <div class="cbox">
+    <div class="ctitle">FINAL WARNING</div>
+    <div class="cbody">Type <strong style="color:var(--red);">RESET</strong> to confirm. No recovery after this.</div>
+    <input class="cinput" id="reset-input" type="text" placeholder="Type RESET to confirm" autocomplete="off">
+    <div class="cbtns">
+      <button class="btn" style="flex:1;background:var(--red);color:#fff;" onclick="doReset()">Delete Everything</button>
+      <button class="btn btn-gh" style="flex:1;" onclick="closeConfirm('cf-r2')">← Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHAT FAB -->
+<button class="cfab" id="cfab" onclick="toggleChat()">
+  <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+  <div class="cunread" id="cunread"></div>
+</button>
+
+<!-- CHAT PANEL -->
+<div class="cpanel" id="cpanel">
+  <div class="cphd">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="cpav">◆</div>
+      <div><div class="cptitle">AI COACH</div><div class="cpsubt" id="cpsubt">Ask anything about your business</div></div>
+    </div>
+    <div class="cpclose" onclick="toggleChat()"><svg viewBox="0 0 14 14"><line x1="13" y1="1" x2="1" y2="13"/><line x1="1" y1="1" x2="13" y2="13"/></svg></div>
+  </div>
+  <div class="cpmsg" id="cpmsg"></div>
+  <div class="cpsugs" id="cpsugs">
+    <button class="csug" onclick="sendSug(this)">How do I price ceramic coating?</button>
+    <button class="csug" onclick="sendSug(this)">How do I land a fleet contract?</button>
+    <button class="csug" onclick="sendSug(this)">Why am I not hitting my goal?</button>
+    <button class="csug" onclick="sendSug(this)">How do I get more repeat clients?</button>
+    <button class="csug" onclick="sendSug(this)">What should I focus on this week?</button>
+  </div>
+  <div class="cpinput">
+    <textarea class="chatinput" id="chat-input" placeholder="Ask your coach anything..." rows="1" onkeydown="chatKey(event)" oninput="chatResize(this)"></textarea>
+    <button class="csend" id="csend" onclick="sendChat()">
+      <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════
+// QUOTES
+// ══════════════════════════════════════
+const QUOTES=[
+  {q:"Success is nothing more than a few simple disciplines, practiced every day.",a:"Jim Rohn"},
+  {q:"You don't get paid for the hour. You get paid for the value you bring to the hour.",a:"Jim Rohn"},
+  {q:"Either you run the day or the day runs you.",a:"Jim Rohn"},
+  {q:"Discipline is the bridge between goals and accomplishment.",a:"Jim Rohn"},
+  {q:"Don't wish it were easier. Wish you were better.",a:"Jim Rohn"},
+  {q:"Work harder on yourself than you do on your job.",a:"Jim Rohn"},
+  {q:"You don't have to be great to start, but you have to start to be great.",a:"Zig Ziglar"},
+  {q:"Your attitude, not your aptitude, will determine your altitude.",a:"Zig Ziglar"},
+  {q:"People often say motivation doesn't last. Neither does bathing — that's why we recommend it daily.",a:"Zig Ziglar"},
+  {q:"You were born to win, but to be a winner you must plan to win, prepare to win, and expect to win.",a:"Zig Ziglar"},
+  {q:"One job done right is worth more than ten jobs done fast.",a:"Detail Weekly"},
+  {q:"Your reputation is your most valuable asset. Protect it on every job.",a:"Detail Weekly"},
+  {q:"The detailer who shows up consistently beats the one who shows up perfectly.",a:"Detail Weekly"},
+  {q:"Premium work commands premium prices. Never apologize for your rate.",a:"Detail Weekly"},
+  {q:"Every follow-up text you don't send is a booking you didn't get.",a:"Detail Weekly"},
+  {q:"The week you don't market is the week after next when you have no jobs.",a:"Detail Weekly"},
+];
+const GREETINGS=["LET'S GET AFTER IT.","TIME TO BUILD.","STAY THE COURSE.","BACK TO WORK.","LET'S GRIND.","NO DAYS OFF.","SHOW UP TODAY."];
+function getDQ(streak,last,goal){
+  if(streak>=4)return{q:"Small disciplines repeated with consistency every day lead to great achievements.",a:"John C. Maxwell"};
+  if(streak===0&&last!==undefined)return{q:"It does not matter how slowly you go as long as you do not stop.",a:"Confucius"};
+  if(last>=goal)return{q:"Success is not final. Failure is not fatal. It is the courage to continue that counts.",a:"Winston Churchill"};
+  const d=new Date();return QUOTES[(d.getDate()+d.getMonth())%QUOTES.length];
+}
+
+// ══════════════════════════════════════
+// STORAGE
+// ══════════════════════════════════════
+const KEY='dw9';
+function load(){try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}return null;}
+function save(d){try{localStorage.setItem(KEY,JSON.stringify(d));}catch(e){}}
+
+// ══════════════════════════════════════
+// STATE
+// ══════════════════════════════════════
+function def(){
+  return{name:'',biz:'',exp:'',time:'',svcs:[],jobs:'',ticket:'',struggle:'',wks:1,
+    vision:'',serious:'',face:'',goal:2500,
+    streak:0,weeks:0,best:0,revHist:[],lastMissed:[],weekNum:1,
+    phase:'dash',p1A:{},p1Rev:0,focus:'',p2Items:[],p2Checked:[],wkISO:null,hist:[]};
+}
+let D=def(), p1A={}, p1R=0, p2I=[];
+
+// ══════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════
+function fmtK(n){return n>=1000?(n/1000).toFixed(1).replace(/\.0$/,'')+'k':n.toLocaleString();}
+function wkISO(ws){
+  const now=new Date(),diff=(now.getDay()-(ws||1)+7)%7;
+  const d=new Date(now);d.setDate(now.getDate()-diff);d.setHours(0,0,0,0);
+  return d.toISOString().split('T')[0];
+}
+function isNewWeek(){return D.wkISO?wkISO(D.wks)!==D.wkISO:false;}
+function gv(g){const s=document.querySelector('#'+g+' .cb.sel');return s?s.dataset.val:'';}
+function gvm(g){return Array.from(document.querySelectorAll('#'+g+' .cb.sel')).map(b=>b.dataset.val);}
+function getVision(){const s=document.querySelector('.vc.sel');return s?s.dataset.val:'';}
+function presel(g,v){document.querySelectorAll('#'+g+' .cb').forEach(b=>b.classList.toggle('sel',b.dataset.val===v));}
+
+// ══════════════════════════════════════
+// SCREEN NAV — registered on window
+// ══════════════════════════════════════
+function APP_go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id==='s-hist')buildHist();
+  if(id==='s-ob'){document.getElementById('cfab').classList.remove('show');}
+  else if(D.name){document.getElementById('cfab').classList.add('show');updateChatSubt();}
+  window.scrollTo(0,0);
+}
+window.APP_go=APP_go;
+
+// ══════════════════════════════════════
+// ONBOARDING
+// ══════════════════════════════════════
+function APP_submitOnboard(){
+  const name=document.getElementById('ob-name').value.trim();
+  if(!name){alert('Enter your name.');return;}
+  D.name=name;
+  D.biz=document.getElementById('ob-biz').value.trim()||'My Detailing Business';
+  D.exp=gv('ob-exp');D.time=gv('ob-time');
+  D.wks=parseInt(gv('ob-wks'))||1;
+  D.goal=parseInt(document.getElementById('ob-goal').value)||2500;
+  D.svcs=gvm('ob-svc');D.jobs=gv('ob-jobs');D.ticket=gv('ob-ticket');D.struggle=gv('ob-struggle');
+  D.vision=getVision();D.serious=gv('ob-serious');D.face=gv('ob-face');
+  D.wkISO=wkISO(D.wks);D.phase='dash';
+  save(D);loadDash();APP_go('s-dash');
+}
+window.APP_submitOnboard=APP_submitOnboard;
+
+// ══════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════
+function loadDash(){
+  document.getElementById('d-name').textContent=D.name;
+  document.getElementById('d-biz').textContent=D.biz;
+  document.getElementById('d-week').textContent='Week '+D.weekNum;
+  document.getElementById('st-streak').textContent=D.streak;
+  document.getElementById('st-weeks').textContent=D.weeks;
+  document.getElementById('st-best').textContent=D.best>0?'$'+fmtK(D.best):'$0';
+  const hr=new Date().getHours();
+  const t=hr<12?'GOOD MORNING':hr<17?'GOOD AFTERNOON':'GOOD EVENING';
+  document.getElementById('d-greet').textContent=t+', '+D.name.toUpperCase()+'. '+GREETINGS[new Date().getDay()%GREETINGS.length];
+  const q=getDQ(D.streak,D.revHist[D.revHist.length-1],D.goal);
+  document.getElementById('d-quote').textContent='\u201C'+q.q+'\u201D';
+  document.getElementById('d-author').textContent='\u2014 '+q.a;
+  renderChart();
+}
+function renderChart(){
+  const h=D.revHist.slice(-4);while(h.length<4)h.unshift(null);
+  const mx=Math.max(D.goal,...h.filter(Boolean),1);
+  const lb=['3 Wks','2 Wks','Last Wk','This Wk'];
+  const el=document.getElementById('chart-bars');el.innerHTML='';
+  h.forEach((v,i)=>{
+    const ht=v?Math.max(6,Math.round((v/mx)*60)):4;
+    el.innerHTML+=`<div class="ccol"><div class="camt">${v?'$'+fmtK(v):'—'}</div><div class="cbar${i===3?' cur':''}" style="height:${ht}px"></div><div class="clbl">${lb[i]}</div></div>`;
+  });
+}
+
+// ══════════════════════════════════════
+// REVIEW QUESTIONS
+// ══════════════════════════════════════
+const RQ=[
+  {id:'booked',   trap:true, q:'Was last week at least 50% booked going into it?',               sub:'Did you know where jobs were coming from, or were you scrambling?'},
+  {id:'rev',      isRev:true},
+  {id:'repeat',   trap:true, q:'Did you have at least 1 returning client this week?',             sub:'Someone who has booked with you before.'},
+  {id:'followup', trap:false,q:'Did you follow up after every job?',                              sub:'Thank-you text + review ask + re-book offer. All three, every job.'},
+  {id:'nodisc',   trap:true, q:'Did you hold your pricing — zero discounts?',                     sub:'Discounting once trains that customer to haggle every time.'},
+  {id:'content',  trap:true, q:'Did you post content consistently — not just when bookings dropped?',sub:'At least 2–3 posts. Before/afters, reels, stories.'},
+  {id:'reviews',  trap:false,q:'Did you ask for a Google review after every job?',                sub:'Send a direct link. Reviews compound over time.'},
+  {id:'quality',  trap:true, q:'Did you do full-quality work — no rushed or cut-corner jobs?',    sub:'One bad word-of-mouth in a small market costs 10 future jobs.'},
+  {id:'ontime',   trap:false,q:'Did you show up on time and communicate before every job?',       sub:'Professionalism is the premium product.'},
+  {id:'supplies', trap:false,q:'Were supplies and equipment ready — no mid-week scrambling?',     sub:'Running out of product kills time and looks unprepared.'},
+  {id:'nogear',   trap:true, q:"Did you avoid buying gear you didn't actually need?",             sub:'Cash in the bank beats tools on the shelf.'},
+  {id:'knowgoal', trap:false,q:'Did you know your monthly goal and where you stood?',             sub:"If you can't say both right now without looking, you're drifting."},
+  {id:'workON',   trap:false,q:'Did you spend 30+ min working ON the business — not just in it?', sub:'Pricing, systems, marketing. Not just showing up and detailing.'},
+  {id:'trend',    trap:true, q:'Is your revenue trending up — not flat and comfortable?',         sub:'Plateau is the slow death. One job a day is a start, not a ceiling.'},
+];
+const SECS={booked:'Pipeline & Bookings',rev:'Revenue',nodisc:'Money & Pricing',content:'Marketing & Visibility',quality:'Operations & Standards',nogear:'Business Health'};
+
+// ══════════════════════════════════════
+// CHECKLIST POOL
+// ══════════════════════════════════════
+const CP={
+  booked:   [{t:'Book at least 50% of next week before this Friday',s:"Don't let Monday arrive empty.",p:true},{t:'Reach out to 5 past customers about scheduling',s:"Your easiest booking is someone who's already used you.",p:false}],
+  rev:      [{t:'Calculate your average job ticket this week',s:"If under target, raise prices or upsell on every job.",p:true},{t:'Identify one add-on to offer this week',s:"Clay bar, sealant, engine bay, odor treatment.",p:false}],
+  repeat:   [{t:'Personally text 3 past clients to re-book',s:'"Hey [Name], due for another detail? Openings next week."',p:true},{t:'Start a simple repeat-client list',s:"A phone note is fine. You can't follow up with people you've lost track of.",p:false}],
+  followup: [{t:'After every job: thank-you text, review ask, re-book offer',s:"All three. Every job. Non-negotiable.",p:false}],
+  nodisc:   [{t:'Hold your prices this week — zero exceptions',s:"If someone pushes back, let them go.",p:true}],
+  content:  [{t:'Post at least 3 times this week — regardless of bookings',s:"Consistency builds brand.",p:true},{t:'Film a full job walkthrough for reels',s:"One good reel beats a week of static posts.",p:false}],
+  reviews:  [{t:'Ask every customer for a Google review this week',s:"Text a direct link. Make it effortless.",p:false}],
+  quality:  [{t:"Don't take on more than you can execute at full quality",s:"Fewer jobs done right beats more done rushed.",p:false}],
+  ontime:   [{t:'Text every customer the morning of their appointment',s:'"Confirmed for today at [time]. See you then."',p:false}],
+  supplies: [{t:'Full inventory check Sunday night',s:"Never run out mid-job.",p:false}],
+  nogear:   [{t:"No gear purchases unless it's a consumable you're out of",s:"Write it down, revisit in 2 weeks.",p:false}],
+  knowgoal: [{t:'Write your monthly goal and current number somewhere visible',s:"Phone lock screen, van dash — anywhere you'll see it.",p:false}],
+  workON:   [{t:'Block 45 min this week to work ON the business',s:"Pricing, marketing plan, fleet leads, process review.",p:false}],
+  trend:    [{t:'Set a specific revenue target higher than last week',s:"Even $50 more is a direction. Flat is backwards.",p:true}],
+};
+const SVC_X={
+  fleet:   [{t:'Identify 2 local businesses to pitch fleet detailing this week',s:"Research their fleet, approach with a maintenance quote.",p:true}],
+  marine:  [{t:'Check the marina or boat launch for detailing opportunities',s:"Boat owners at the ramp are warm leads.",p:true}],
+  ceramic: [{t:'Follow up with any ceramic coating leads this week',s:"One coating close is worth several standard details.",p:true}],
+};
+const VIS_X={
+  scalable:[{t:'Document one process this week that could be handed to a future employee',s:"If it only lives in your head, it can't scale.",p:false}],
+  personal:[{t:'Post one piece of content that shows YOU — not just the work',s:"People buy you, not just clean cars.",p:false}],
+};
+const STR_X={
+  bookings: [{t:'Spend 20 min mapping your local target market',s:"Who in your area owns the vehicles you want to detail?",p:true}],
+  pricing:  [{t:"Look up 3 competitors' pricing this week",s:"If you're the cheapest, you're leaving money behind.",p:true}],
+  marketing:[{t:'Pick one marketing channel and be consistent all week',s:"One channel done well beats three done poorly.",p:true}],
+  repeat:   [{t:'Create a simple 30-day re-book follow-up system',s:"Everyone who books gets a text 30 days later.",p:true}],
+  organized:[{t:'Set up a basic weekly job log — date, service, amount, name',s:"You need to see your own patterns.",p:true}],
+};
+
+// ══════════════════════════════════════
+// ICON HELPER
+// ══════════════════════════════════════
+function getIcon(item){
+  if(item.override)return{cls:'og',icon:'⚑',tip:'Your personal focus'};
+  if(item.aiGen)return{cls:'ag',icon:'⭐',tip:'AI generated — new goal for you this week'};
+  const pastTitles=(D.hist||[]).flatMap(w=>w.itemTitles||[]);
+  const seenBefore=pastTitles.includes(item.t);
+  const recentMissed=(D.hist||[]).slice(-4).filter(w=>(w.missedIds||[]).includes(item.sid)).length;
+  if(recentMissed>=2)return{cls:'hg',icon:'🔨',tip:'Habit builder — this keeps showing up, lock it down'};
+  if(seenBefore)return{cls:'hg',icon:'🔨',tip:'Returning goal — keep building on this'};
+  return{cls:'ng',icon:'⭐',tip:'New this week'};
+}
+
+// ══════════════════════════════════════
+// PHASE 1
+// ══════════════════════════════════════
+function APP_goP1(){
+  p1A={};p1R=0;
+  document.getElementById('p1-name').textContent=D.name;
+  document.getElementById('p1-biz').textContent=D.biz;
+  document.getElementById('p1-streak').textContent=D.streak;
+  D.phase='p1';save(D);
+  buildP1(D.p1A||{},D.p1Rev||0,D.focus||'');
+  APP_go('s-p1');
+}
+window.APP_goP1=APP_goP1;
+
+function buildP1(sA,sR,sF){
+  const w=document.getElementById('p1-body');w.innerHTML='';
+  w.innerHTML+=`<div class="fo"><div class="fol">⚑ Weekly Focus Override</div><div class="fod">Set your #1 priority this week. It pins to the top of your plan. Leave blank to let the system decide.</div><input class="foi" id="foi" type="text" placeholder="e.g. Land a fleet contract with ABC Logistics..." value="${sF||''}"></div>`;
+  RQ.forEach(q=>{
+    if(SECS[q.id])w.innerHTML+=`<div class="sh"><h2>${SECS[q.id]}</h2></div>`;
+    if(q.isRev){
+      w.innerHTML+=`<div class="ric"><div class="ril">What did you actually bring in last week?</div><div class="ris">Goal: $${D.goal.toLocaleString()}/week. Real number only.</div><div class="rir"><div class="rid">$</div><input class="rif" id="rif" type="number" placeholder="0" min="0" value="${sR||''}" oninput="p1R=parseInt(this.value)||0"></div></div>`;
+      if(sR)p1R=sR;return;
+    }
+    const sa=sA[q.id];if(sa)p1A[q.id]=sa;
+    w.innerHTML+=`<div class="rvc${q.trap?' trap':''}" id="rc-${q.id}"><div class="rvq">${q.trap?'⚑ ':''}${q.q}</div><div class="rvs">${q.sub}</div><div class="rvo"><button class="rb${sa==='c'?' sc2':''}" onclick="setAns('${q.id}','c',this)">✓ Crushed It</button><button class="rb${sa==='p'?' sp2':''}" onclick="setAns('${q.id}','p',this)">~ Partial</button><button class="rb${sa==='m'?' sm':''}" onclick="setAns('${q.id}','m',this)">✗ Missed It</button></div></div>`;
+  });
+}
+
+function APP_setAns(id,val,btn){
+  p1A[id]=val;
+  document.querySelectorAll('#rc-'+id+' .rb').forEach(b=>b.classList.remove('sc2','sp2','sm'));
+  btn.classList.add(val==='c'?'sc2':val==='p'?'sp2':'sm');
+  D.p1A=p1A;save(D);
+}
+window.APP_setAns=APP_setAns;
+
+function APP_submitP1(){
+  const missing=RQ.filter(q=>!q.isRev&&!p1A[q.id]);
+  if(missing.length){alert('Please answer all '+missing.length+' remaining question(s).');return;}
+  p1R=parseInt(document.getElementById('rif')?.value)||0;
+  D.p1Rev=p1R;D.p1A=p1A;
+  D.focus=document.getElementById('foi')?.value?.trim()||'';
+  save(D);buildP2();APP_go('s-p2');
+}
+window.APP_submitP1=APP_submitP1;
+
+// ══════════════════════════════════════
+// PHASE 2
+// ══════════════════════════════════════
+function buildP2(){
+  document.getElementById('p2-name').textContent=D.name;
+  document.getElementById('p2-biz').textContent=D.biz;
+  document.getElementById('p2-wklbl').textContent='Week '+D.weekNum;
+  const missed=RQ.filter(q=>!q.isRev&&p1A[q.id]==='m').map(q=>q.id);
+  const partial=RQ.filter(q=>!q.isRev&&p1A[q.id]==='p').map(q=>q.id);
+  // Repeat traps
+  const reps=missed.filter(id=>(D.lastMissed||[]).includes(id));
+  const ta=document.getElementById('ta'),tl=document.getElementById('ta-list');
+  if(reps.length){tl.innerHTML=reps.map(id=>{const q=RQ.find(x=>x.id===id);return`<li>${q?q.q:id}</li>`;}).join('');ta.classList.add('show');}
+  else ta.classList.remove('show');
+  // Build items
+  p2I=[];const added=new Set();
+  if(D.focus){p2I.push({t:D.focus,s:'Your personal priority this week.',p:true,priority:true,override:true,sid:'override'});added.add(D.focus);}
+  missed.forEach(id=>{(CP[id]||[]).forEach(item=>{if(!added.has(item.t)){p2I.push({...item,priority:true,sid:id});added.add(item.t);}});});
+  partial.forEach(id=>{const pl=CP[id]||[];if(pl[0]&&!added.has(pl[0].t)){p2I.push({...pl[0],priority:false,sid:id});added.add(pl[0].t);}});
+  if(D.struggle&&STR_X[D.struggle]){STR_X[D.struggle].forEach(item=>{if(!added.has(item.t)){p2I.push({...item,priority:true,sid:'struggle'});added.add(item.t);}});}
+  (D.svcs||[]).forEach(s=>{if(SVC_X[s])SVC_X[s].forEach(item=>{if(!added.has(item.t)){p2I.push({...item,priority:false,sid:'svc'});added.add(item.t);}});});
+  if(D.vision&&VIS_X[D.vision])VIS_X[D.vision].forEach(item=>{if(!added.has(item.t)){p2I.push({...item,priority:false,sid:'vision'});added.add(item.t);}});
+  ['followup','reviews','ontime','knowgoal'].forEach(id=>{const pl=CP[id]||[];if(pl[0]&&!added.has(pl[0].t)){p2I.push({...pl[0],priority:false,sid:id});added.add(pl[0].t);}});
+  D.p2Items=p2I;D.p2Checked=[];D.phase='p2';D.wkISO=wkISO(D.wks);save(D);
+  renderP2([]);renderVerdict(missed,p1R);
+  getAIInsight(missed,p1R);
+}
+
+function renderVerdict(missed,rev){
+  const tm=missed.filter(id=>RQ.find(q=>q.id===id&&q.trap));
+  const pct=D.goal>0?Math.round((rev/D.goal)*100):0;
+  let vc='vy',vt='CLOSE — KEEP PUSHING',vb='';
+  if(tm.length>=4){vc='vr';vt='RED FLAG WEEK';vb=tm.length+' traps open last week. That\'s a pattern. Fix focus items first.';}
+  else if(tm.length>=2){vc='vy';vt='WATCH YOURSELF';vb='Missed '+tm.length+' trap areas. Not in crisis but not building either.';}
+  else if(pct>=100&&tm.length===0){vc='vg';vt='LOCKED IN';vb='Hit your revenue goal and kept every trap closed. Push the ceiling higher.';}
+  else if(pct>=80){vc='vy';vt='ALMOST THERE';vb=(100-pct)+'% short of goal. Close doesn\'t compound. Tighten the focus items.';}
+  else if(pct<50){vc='vr';vt='REVENUE PROBLEM';vb=pct+'% of goal. Real gap. Identify the one move that changes this week\'s number.';}
+  else{vb='Some areas to tighten. Be deliberate, not just busy.';}
+  document.getElementById('p2-verd').innerHTML=`<div class="verd ${vc}"><div class="vey">Last Week Verdict</div><div class="vti">${vt}</div><div class="vbo">${vb}</div></div>`;
+}
+
+function renderP2(checked){
+  const w=document.getElementById('p2-body');
+  const pct=D.goal>0?Math.round((p1R/D.goal)*100):0;
+  const rc=pct>=100?'#2dcf8a':pct>=70?'#c9933a':'#e05050';
+  const legend=`<div class="icon-legend"><div class="il-item"><div class="ci-icon ng" style="width:22px;height:22px;font-size:11px;">⭐</div><span>New this week</span></div><div class="il-item"><div class="ci-icon ag" style="width:22px;height:22px;font-size:11px;">⭐</div><span>AI generated</span></div><div class="il-item"><div class="ci-icon hg" style="width:22px;height:22px;font-size:11px;">🔨</div><span>Habit builder</span></div><div class="il-item"><div class="ci-icon og" style="width:22px;height:22px;font-size:11px;">⚑</div><span>Your focus</span></div></div>`;
+  w.innerHTML=`<div class="rs"><div class="rsl">Last Week Revenue</div><div class="rsr"><div class="rsv" style="color:${rc}">$${p1R.toLocaleString()}</div><div class="rsg">of $${D.goal.toLocaleString()} — ${pct}%</div></div></div>`+legend;
+  const pri=p2I.filter(i=>i.priority),reg=p2I.filter(i=>!i.priority);
+  if(pri.length){w.innerHTML+=`<div class="sh"><h2>Fix These First</h2></div>`;pri.forEach((item,i)=>w.innerHTML+=ciHTML(item,i,checked.includes(i)));}
+  if(reg.length){w.innerHTML+=`<div class="sh"><h2>Keep Building</h2></div>`;reg.forEach((item,i)=>{const idx=i+pri.length;w.innerHTML+=ciHTML(item,idx,checked.includes(idx));});}
+  updateProg();
+}
+
+function ciHTML(item,idx,checked){
+  const ic=getIcon(item);
+  const badge=item.override?`<div class="badge badge-g">YOUR FOCUS</div>`:item.priority?`<div class="badge badge-r${checked?' badge-g':''}">FOCUS</div>`:'';
+  return`<div class="ci${item.priority?' pri':''}${checked?' done':''}${item.override?' ov':''}" onclick="toggleCI(this,${idx})"><div class="cibx"><span class="cick">✓</span></div><div class="ci-icon ${ic.cls}" title="${ic.tip}">${ic.icon}</div><div class="cib"><span class="cit">${item.t}</span><span class="cis">${item.s}</span></div>${badge}</div>`;
+}
+
+function APP_toggleCI(el,idx){
+  el.classList.toggle('done');
+  D.p2Checked=Array.from(document.querySelectorAll('#p2-body .ci')).map((e,i)=>e.classList.contains('done')?i:-1).filter(i=>i>=0);
+  save(D);updateProg();
+}
+window.APP_toggleCI=APP_toggleCI;
+
+function updateProg(){
+  const all=document.querySelectorAll('#p2-body .ci');
+  const done=document.querySelectorAll('#p2-body .ci.done');
+  const pct=all.length>0?Math.round((done.length/all.length)*100):0;
+  document.getElementById('prog-lbl').textContent=done.length+' / '+all.length;
+  document.getElementById('prog-fill').style.width=pct+'%';
+}
+
+function rebuildP2(){
+  document.getElementById('p2-name').textContent=D.name;
+  document.getElementById('p2-biz').textContent=D.biz;
+  document.getElementById('p2-wklbl').textContent='Week '+D.weekNum;
+  p2I=D.p2Items||[];p1A=D.p1A||{};p1R=D.p1Rev||0;
+  const missed=RQ.filter(q=>!q.isRev&&p1A[q.id]==='m').map(q=>q.id);
+  const reps=missed.filter(id=>(D.lastMissed||[]).includes(id));
+  const ta=document.getElementById('ta'),tl=document.getElementById('ta-list');
+  if(reps.length){tl.innerHTML=reps.map(id=>{const q=RQ.find(x=>x.id===id);return`<li>${q?q.q:id}</li>`;}).join('');ta.classList.add('show');}else ta.classList.remove('show');
+  renderP2(D.p2Checked||[]);renderVerdict(missed,p1R);
+  getAIInsight(missed,p1R);
+}
+
+// ══════════════════════════════════════
+// AI INSIGHT
+// ══════════════════════════════════════
+async function getAIInsight(missed,rev){
+  const box=document.getElementById('p2-ai');
+  box.innerHTML='<div class="aib"><div class="ail">AI Coach Insight</div><div class="aibody" style="color:var(--tx3);font-style:italic;">Analyzing your week...</div></div>';
+  try{
+    const vm={hobby:'a hobby',parttime:'a part-time gig',personal:'a personal brand community business',scalable:'a scalable business built to grow or sell'};
+    const prompt='You are a direct, no-nonsense business coach for mobile detailers. Give 2-3 sentences of honest, specific coaching for this week based on their data. Reference their actual numbers.\n\nDetailer: '+D.name+'\nBusiness: '+D.biz+'\nServices: '+(D.svcs||[]).join(', ')+'\nVision: '+(vm[D.vision]||'building a business')+'\nWeekly goal: $'+D.goal+'\nLast week revenue: $'+rev+' ('+(D.goal>0?Math.round((rev/D.goal)*100):0)+'% of goal)\nRevenue trend (last 4 wks): '+D.revHist.slice(-4).map(v=>'$'+v).join(', ')+'\nStreak: '+D.streak+' clean weeks\nTraps missed: '+(missed.length?missed.join(', '):'none')+'\nBiggest struggle: '+(D.struggle||'not specified')+(D.focus?'\nThis week focus: '+D.focus:'');
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
+    });
+    const data=await res.json();
+    const text=(data.content&&data.content[0]&&data.content[0].text)||'';
+    box.innerHTML=text?`<div class="aib"><div class="ail">AI Coach Insight</div><div class="aibody">${text}</div></div>`:'';
+  }catch(e){box.innerHTML='';}
+}
+
+// ══════════════════════════════════════
+// FINISH WEEK
+// ══════════════════════════════════════
+function APP_confirmFinish(){
+  document.getElementById('cf-wknum').textContent=D.weekNum;
+  document.getElementById('cf-fin').classList.add('open');
+}
+window.APP_confirmFinish=APP_confirmFinish;
+
+function APP_finishWeek(){
+  closeConfirm('cf-fin');
+  const missed=RQ.filter(q=>!q.isRev&&p1A[q.id]==='m').map(q=>q.id);
+  const tm=missed.filter(id=>RQ.find(q=>q.id===id&&q.trap));
+  const total=RQ.filter(q=>!q.isRev&&q.trap).length;
+  const score=(total-tm.length)/total;
+  const rec={weekNum:D.weekNum,date:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),revenue:p1R,goal:D.goal,pct:D.goal>0?Math.round((p1R/D.goal)*100):0,streak:D.streak,trapsMissed:tm.length,missedIds:missed,totalItems:p2I.length,checkedItems:(D.p2Checked||[]).length,vision:D.vision,focus:D.focus||'',itemTitles:p2I.map(i=>i.t)};
+  D.hist=D.hist||[];D.hist.push(rec);
+  D.weeks++;D.weekNum++;
+  D.revHist.push(p1R);if(D.revHist.length>52)D.revHist.shift();
+  if(p1R>D.best)D.best=p1R;
+  if(score>=0.85)D.streak++;else if(score<0.5)D.streak=Math.max(0,D.streak-1);
+  D.lastMissed=missed;D.phase='dash';D.p1A={};D.p1Rev=0;D.p2Items=[];D.p2Checked=[];D.focus='';D.wkISO=wkISO(D.wks);
+  save(D);loadDash();APP_go('s-dash');
+}
+window.APP_finishWeek=APP_finishWeek;
+
+// ══════════════════════════════════════
+// NEW WEEK
+// ══════════════════════════════════════
+function buildNW(){
+  document.getElementById('nw-name').textContent=D.name;
+  document.getElementById('nw-biz').textContent=D.biz;
+  const items=D.p2Items||[],checked=D.p2Checked||[];
+  const done=items.filter((_,i)=>checked.includes(i));
+  const miss=items.filter((_,i)=>!checked.includes(i));
+  const pct=D.goal>0?Math.round(((D.p1Rev||0)/D.goal)*100):0;
+  let vc='vy',vt='NEW WEEK',vb='';
+  if(pct>=100){vc='vg';vt='GREAT WEEK';vb='You hit your revenue goal. Build on it.';}
+  else if(pct>=70){vt='CLOSE — PUSH HARDER';vb='You hit '+pct+'% of goal. This week close the gap.';}
+  else{vc='vr';vt='TIME TO STEP UP';vb=pct+'% of goal. New week, new chance.';}
+  document.getElementById('nw-verd').innerHTML=`<div class="verd ${vc}" style="margin-bottom:14px;"><div class="vey">Week Complete</div><div class="vti">${vt}</div><div class="vbo">${vb}</div></div>`;
+  let html='';
+  if(done.length)html+=`<div class="nwc"><div class="nwct">WHAT YOU ACCOMPLISHED</div>${done.map(i=>`<div class="nwi"><div class="nwd ok"></div><div class="nwt ok">${i.t}</div></div>`).join('')}</div>`;
+  if(miss.length)html+=`<div class="nwc"><div class="nwct">CARRIED FORWARD</div>${miss.map(i=>`<div class="nwi"><div class="nwd no"></div><div class="nwt">${i.t}</div></div>`).join('')}</div>`;
+  document.getElementById('nw-sum').innerHTML=html;
+}
+
+function APP_startNewWeek(){
+  D.phase='dash';D.p1A={};D.p1Rev=0;D.p2Items=[];D.p2Checked=[];D.focus='';D.wkISO=wkISO(D.wks);
+  save(D);loadDash();APP_go('s-dash');
+}
+window.APP_startNewWeek=APP_startNewWeek;
+
+// ══════════════════════════════════════
+// HISTORY
+// ══════════════════════════════════════
+function buildHist(){
+  const hist=(D.hist||[]).slice().reverse();
+  const el=document.getElementById('hist-body');
+  if(!hist.length){el.innerHTML='<div style="text-align:center;padding:40px 0;color:var(--tx3);font-size:13px;">No weeks recorded yet. Complete your first week to start building history.</div>';return;}
+  const vm={hobby:'Hobby',parttime:'Part-Time',personal:'Personal Brand',scalable:'Built to Scale'};
+  el.innerHTML=hist.map(w=>{
+    const pc=w.pct>=100?'#2dcf8a':w.pct>=70?'#c9933a':'#e05050';
+    const ml=(w.missedIds||[]).map(id=>{const q=RQ.find(x=>x.id===id);return q?q.q:id;});
+    return`<div class="hw"><div class="hwhd"><div><div class="hwn">WEEK ${w.weekNum}</div>${w.focus?`<div style="font-size:11px;color:var(--tx3);margin-top:2px;">Focus: ${w.focus}</div>`:''}</div><div class="hwd">${w.date||''}</div></div><div class="hwst"><div class="hws"><div class="hwsv" style="color:${pc}">$${fmtK(w.revenue)}</div><div class="hwsl">Revenue</div></div><div class="hws"><div class="hwsv" style="color:${pc}">${w.pct}%</div><div class="hwsl">Of Goal</div></div><div class="hws"><div class="hwsv">${w.checkedItems||0}/${w.totalItems||0}</div><div class="hwsl">Done</div></div><div class="hws"><div class="hwsv" style="color:${w.trapsMissed===0?'#2dcf8a':'#e05050'}">${w.trapsMissed}</div><div class="hwsl">Traps</div></div></div>${ml.length?`<div style="margin-top:10px;"><div style="font-size:9px;letter-spacing:1.5px;color:var(--tx3);text-transform:uppercase;margin-bottom:5px;font-weight:600;">Missed</div>${ml.map(l=>`<div style="font-size:11px;color:#c07070;padding:3px 0;border-bottom:1px solid var(--bd);">${l}</div>`).join('')}</div>`:'<div style="font-size:11px;color:var(--grn);margin-top:8px;">✓ No traps missed</div>'}${w.vision?`<div style="display:inline-block;font-size:9px;background:rgba(200,146,58,.1);color:var(--gold);border:1px solid rgba(200,146,58,.2);border-radius:3px;padding:2px 7px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-top:8px;">${vm[w.vision]||w.vision}</div>`:''}</div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════
+// SETTINGS
+// ══════════════════════════════════════
+function APP_openSD(){
+  document.getElementById('s-name').value=D.name;
+  document.getElementById('s-biz').value=D.biz;
+  document.getElementById('s-goal').value=D.goal;
+  setTimeout(()=>{presel('s-struggle',D.struggle);presel('s-wks',String(D.wks||1));},20);
+  document.getElementById('sdo').classList.add('open');
+  document.getElementById('sdp').classList.add('open');
+}
+window.APP_openSD=APP_openSD;
+
+function APP_closeSD(){
+  document.getElementById('sdo').classList.remove('open');
+  document.getElementById('sdp').classList.remove('open');
+}
+window.APP_closeSD=APP_closeSD;
+
+function APP_saveSD(){
+  const name=document.getElementById('s-name').value.trim();
+  if(!name){alert('Name cannot be empty.');return;}
+  D.name=name;D.biz=document.getElementById('s-biz').value.trim()||D.biz;
+  D.goal=parseInt(document.getElementById('s-goal').value)||D.goal;
+  const st=gv('s-struggle');if(st)D.struggle=st;
+  const ws=gv('s-wks');if(ws)D.wks=parseInt(ws);
+  save(D);APP_closeSD();loadDash();
+}
+window.APP_saveSD=APP_saveSD;
+
+// ══════════════════════════════════════
+// RESET
+// ══════════════════════════════════════
+function APP_startReset(){APP_closeSD();document.getElementById('cf-r1').classList.add('open');}
+window.APP_startReset=APP_startReset;
+
+function APP_showReset2(){closeConfirm('cf-r1');document.getElementById('reset-input').value='';document.getElementById('cf-r2').classList.add('open');}
+window.APP_showReset2=APP_showReset2;
+
+function APP_doReset(){
+  if(document.getElementById('reset-input').value.trim().toUpperCase()!=='RESET'){alert('Type RESET exactly to confirm.');return;}
+  closeConfirm('cf-r2');
+  try{localStorage.removeItem(KEY);}catch(e){}
+  D=def();APP_go('s-ob');
+}
+window.APP_doReset=APP_doReset;
+
+// ══════════════════════════════════════
+// AI CHAT
+// ══════════════════════════════════════
+let chatOpen=false,chatHist=[],chatBusy=false;
+
+function APP_toggleChat(){
+  chatOpen=!chatOpen;
+  document.getElementById('cpanel').classList.toggle('open',chatOpen);
+  document.getElementById('cunread').classList.remove('show');
+  if(chatOpen&&chatHist.length===0)chatWelcome();
+  if(chatOpen)setTimeout(()=>{const i=document.getElementById('chat-input');if(i)i.focus();},300);
+}
+window.APP_toggleChat=APP_toggleChat;
+
+function chatWelcome(){
+  const hr=new Date().getHours();
+  const g=hr<12?'Morning':hr<17?'Hey':'Evening';
+  const rev=D.revHist.length>0?D.revHist[D.revHist.length-1]:null;
+  const pct=rev&&D.goal>0?Math.round((rev/D.goal)*100):null;
+  let ctx=pct!==null?(pct>=100?' Last week you hit your revenue goal — solid work.':' Last week you hit '+pct+'% of your $'+D.goal.toLocaleString()+' goal.'):'';
+  chatAppend('ai',g+' '+D.name+'.'+ctx+' What do you want to work through? Ask me anything — pricing, bookings, fleet contracts, or what to focus on this week.');
+}
+
+function chatPrompt(){
+  const vm={hobby:'a hobby',parttime:'a part-time gig',personal:'a personal brand / community business',scalable:'a scalable business built to grow or sell'};
+  const hist=D.revHist.slice(-8);
+  const avg=hist.length>0?Math.round(hist.reduce((a,b)=>a+b,0)/hist.length):0;
+  const trend=hist.length>=2?(hist[hist.length-1]>hist[0]?'trending up':hist[hist.length-1]<hist[0]?'trending down':'flat'):'insufficient data';
+  const missed=(D.lastMissed||[]).map(id=>{const q=RQ.find(x=>x.id===id);return q?q.q:id;}).join('; ')||'none';
+  return 'You are a direct, no-nonsense business coach for mobile detailers. Give specific, actionable advice based on their real data. Reference their actual numbers. Never be vague.\n\nDETAILER: '+D.name+'\nBusiness: '+D.biz+'\nServices: '+((D.svcs||[]).join(', ')||'auto detailing')+'\nVision: '+(vm[D.vision]||'building a business')+'\nFull-time/part-time: '+D.time+'\n\nNUMBERS:\nWeekly goal: $'+D.goal.toLocaleString()+'\nCurrent week: '+D.weekNum+'\nStreak: '+D.streak+' clean weeks\nBest week: $'+D.best.toLocaleString()+'\nAvg revenue (8wk): $'+avg.toLocaleString()+'\nTrend: '+trend+'\nLast 4 weeks: '+D.revHist.slice(-4).map(v=>'$'+v).join(', ')+'\n\nLAST WEEK:\nTraps missed: '+missed+'\nStruggle: '+(D.struggle||'not specified')+(D.focus?'\nThis week focus: '+D.focus:'')+'\n\nKeep responses to 2-4 sentences unless they ask for a breakdown. Use web search for pricing, market rates, or current real-world information.';
+}
+
+async function APP_sendChat(msgOverride){
+  const input=document.getElementById('chat-input');
+  const msg=msgOverride||(input?input.value.trim():'');
+  if(!msg||chatBusy)return;
+  if(!msgOverride&&input){input.value='';chatResize(input);}
+  document.getElementById('cpsugs').style.display='none';
+  chatAppend('user',msg);
+  chatHist.push({role:'user',content:msg});
+  chatShowTyping();
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:chatPrompt(),tools:[{type:'web_search_20250305',name:'web_search'}],messages:chatHist})
+    });
+    const data=await res.json();
+    chatHideTyping();
+    let reply='';
+    if(data.content&&Array.isArray(data.content)){
+      const tu=data.content.filter(b=>b.type==='tool_use');
+      const tb=data.content.filter(b=>b.type==='text');
+      if(tu.length&&!tb.length){reply=await chatHandleTool(data.content,tu);}
+      else{reply=tb.map(b=>b.text).join('\n').trim();}
+    }
+    if(reply){chatAppend('ai',reply);chatHist.push({role:'assistant',content:reply});if(!chatOpen)document.getElementById('cunread').classList.add('show');}
+  }catch(e){chatHideTyping();chatAppend('ai',"I'm having trouble connecting right now. Check your connection and try again.");}
+}
+window.APP_sendChat=APP_sendChat;
+
+async function chatHandleTool(ac,tu){
+  chatHist.push({role:'assistant',content:ac});
+  chatHist.push({role:'user',content:tu.map(t=>({type:'tool_result',tool_use_id:t.id,content:'Search completed. Answer based on your knowledge and the search context.'}))});
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:chatPrompt(),tools:[{type:'web_search_20250305',name:'web_search'}],messages:chatHist})});
+    const d=await r.json();
+    const tb=(d.content||[]).filter(b=>b.type==='text');
+    const reply=tb.map(b=>b.text).join('\n').trim();
+    if(reply)chatHist.push({role:'assistant',content:reply});
+    return reply||"I had trouble getting search results. Try asking again.";
+  }catch(e){return "Couldn't complete the search. Here's what I know from my training:";}
+}
+
+function APP_sendSug(btn){APP_sendChat(btn.textContent.trim());}
+window.APP_sendSug=APP_sendSug;
+
+function chatAppend(role,text){
+  const w=document.getElementById('cpmsg');
+  const d=document.createElement('div');
+  d.className='cm '+role;
+  const time=new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  const fmt=text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+  d.innerHTML=`<div class="cmb">${fmt}</div><div class="cmt">${time}</div>`;
+  w.appendChild(d);w.scrollTop=w.scrollHeight;
+}
+function chatShowTyping(){
+  chatBusy=true;
+  const btn=document.getElementById('csend');if(btn)btn.disabled=true;
+  const w=document.getElementById('cpmsg');
+  const d=document.createElement('div');d.className='cm ai';d.id='ctyping';
+  d.innerHTML='<div class="cmb"><div class="cpty"><span></span><span></span><span></span></div></div>';
+  w.appendChild(d);w.scrollTop=w.scrollHeight;
+}
+function chatHideTyping(){
+  chatBusy=false;
+  const btn=document.getElementById('csend');if(btn)btn.disabled=false;
+  const el=document.getElementById('ctyping');if(el)el.remove();
+}
+function chatKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();APP_sendChat();}}
+function chatResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,100)+'px';}
+function updateChatSubt(){
+  const el=document.getElementById('cpsubt');if(!el||!D.name)return;
+  const rev=D.revHist.length>0?D.revHist[D.revHist.length-1]:null;
+  const pct=rev&&D.goal>0?Math.round((rev/D.goal)*100):null;
+  el.textContent=pct!==null?'Week '+D.weekNum+' · Last week: '+pct+'% of goal':'Week '+D.weekNum+' · '+D.biz;
+}
+
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+(function init(){
+  const saved=load();
+  if(saved&&saved.name){
+    D={...def(),...saved};
+    p1A=D.p1A||{};p1R=D.p1Rev||0;p2I=D.p2Items||[];
+    if(isNewWeek()&&D.phase==='p2'){buildNW();APP_go('s-nw');}
+    else if(D.phase==='p2'){rebuildP2();APP_go('s-p2');}
+    else if(D.phase==='p1'){
+      document.getElementById('p1-name').textContent=D.name;
+      document.getElementById('p1-biz').textContent=D.biz;
+      document.getElementById('p1-streak').textContent=D.streak;
+      buildP1(D.p1A||{},D.p1Rev||0,D.focus||'');APP_go('s-p1');
+    }else{loadDash();APP_go('s-dash');}
+  }else{APP_go('s-ob');}
+})();
+</script>
+</body>
+</html>
