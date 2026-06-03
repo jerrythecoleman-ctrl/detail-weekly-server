@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script>
 // ALL onclick functions defined here — loads before any HTML
-function pick(g,b){document.querySelectorAll('#'+g+' .cb').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');}
+function pick(g,b){document.querySelecorAll('#'+g+' .cb').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');}
 function multiPick(g,b){b.classList.toggle('sel');}
 function pickVision(b){document.querySelectorAll('.vision-card').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');}
 function obNext(f){
@@ -933,7 +933,7 @@ async function getAIInsight(missed,rev){
   try{
     const vm={hobby:'a hobby',parttime:'a part-time gig',personal:'a personal brand community business',scalable:'a scalable business built to grow or sell'};
     const prompt='You are a direct, no-nonsense business coach for mobile detailers. Give 2-3 sentences of honest, specific coaching for this week based on their data. Reference their actual numbers.\n\nDetailer: '+D.name+'\nBusiness: '+D.biz+'\nServices: '+(D.svcs||[]).join(', ')+'\nVision: '+(vm[D.vision]||'building a business')+'\nWeekly goal: $'+D.goal+'\nLast week revenue: $'+rev+' ('+(D.goal>0?Math.round((rev/D.goal)*100):0)+'% of goal)\nRevenue trend (last 4 wks): '+D.revHist.slice(-4).map(v=>'$'+v).join(', ')+'\nStreak: '+D.streak+' clean weeks\nTraps missed: '+(missed.length?missed.join(', '):'none')+'\nBiggest struggle: '+(D.struggle||'not specified')+(D.focus?'\nThis week focus: '+D.focus:'');
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
+    const res=await fetch('https://detail-weekly-server.onrender.com/chat',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
@@ -1101,7 +1101,7 @@ async function APP_sendChat(msgOverride){
   chatHist.push({role:'user',content:msg});
   chatShowTyping();
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
+    const res=await fetch('https://detail-weekly-server.onrender.com/chat',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:chatPrompt(),tools:[{type:'web_search_20250305',name:'web_search'}],messages:chatHist})
@@ -1124,7 +1124,7 @@ async function chatHandleTool(ac,tu){
   chatHist.push({role:'assistant',content:ac});
   chatHist.push({role:'user',content:tu.map(t=>({type:'tool_result',tool_use_id:t.id,content:'Search completed. Answer based on your knowledge and the search context.'}))});
   try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:chatPrompt(),tools:[{type:'web_search_20250305',name:'web_search'}],messages:chatHist})});
+    const r=await fetch('https://detail-weekly-server.onrender.com/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:chatPrompt(),tools:[{type:'web_search_20250305',name:'web_search'}],messages:chatHist})});
     const d=await r.json();
     const tb=(d.content||[]).filter(b=>b.type==='text');
     const reply=tb.map(b=>b.text).join('\n').trim();
