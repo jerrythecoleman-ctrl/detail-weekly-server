@@ -1170,7 +1170,7 @@ function updateChatSubt(){
 // ══════════════════════════════════════
 // INIT
 // ══════════════════════════════════════
-(function init(){
+(function init(){fetch('https://detail-weekly-server.onrender.com').catch(()=>{});
   const saved=load();
   if(saved&&saved.name){
     D={...def(),...saved};
